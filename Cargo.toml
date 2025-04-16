@@ -1,0 +1,32 @@
+[package]
+name = "plugin-local"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = "0.22.1"
+chrono = "0.4.40"
+env_logger = "0.11.6"
+event-listener = "5.4.0"
+lazy_static = "1.5.0"
+log = "0.4.26"
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+rand = "0.8"
+rsa = {version="0.9.8", features=["sha2"]}
+serde = "1.0.218"
+serde_json = "1.0.140"
+strum = "0.27.1"
+strum_macros = "0.27.1"
+thiserror = "2.0.12"
+tokio = {version="1.43.0", features=["full"]}
+zbus = { version = "5.5.0", default-features = false, features = ["tokio"] }
+zbus_macros = "5.5.0"
+zbus_names = "4.2.0"
+serde_yaml = "0.9.34"
+reqwest = {version="0.12.15", features=["blocking", "stream"]}
+futures = "0.3.31"
+error-chain = "0.12.4"
+futures-util = "0.3.31"
+zip-extract = "0.2.2"
+dirs = "6.0.0"
