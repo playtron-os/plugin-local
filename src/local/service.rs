@@ -1,34 +1,59 @@
+use crate::auth::user::User;
 use crate::constants::LIBRARY_PROVIDER_ID;
 
 use crate::plugin::library_provider::LibraryProviderSignals;
 use crate::types::app::{
-    self, DownloadStage, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronImage,
-    PlaytronProvider, ProviderItem,
+    self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronProvider, ProviderItem,
 };
 use crate::types::cloud_sync::CloudPath;
-use crate::types::results::ResultWithError;
+use crate::types::results::{EmptyResult, ResultWithError};
 use futures::future;
-use futures_util::StreamExt;
-use std::cmp::min;
+use rsa::pkcs1::EncodeRsaPublicKey;
+use rsa::pkcs8::LineEnding;
+use rsa::{RsaPrivateKey, RsaPublicKey};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Write;
 use std::path::PathBuf;
 use std::vec;
 use zbus::fdo;
 use zbus::object_server::SignalEmitter;
 
-use super::connector::ExampleConnector;
+use super::connector::LocalConnector;
 
 #[derive(Clone)]
-pub struct ExampleService {
-    connector: ExampleConnector,
+pub struct LocalService {
+    rsa: RsaPrivateKey,
+    connector: LocalConnector,
 }
 
-impl ExampleService {
+impl LocalService {
     pub fn new() -> Self {
-        let connector = ExampleConnector {};
-        Self { connector }
+        let connector = LocalConnector {};
+        let mut rng = rand::thread_rng();
+        let rsa = RsaPrivateKey::new(&mut rng, 2048).expect("failed to generate new key");
+        Self { rsa, connector }
+    }
+
+    pub fn get_public_key(&self) -> String {
+        let public_key = RsaPublicKey::from(&self.rsa);
+        public_key.to_pkcs1_pem(LineEnding::LF).unwrap()
+    }
+
+    pub async fn login(&mut self, name: String, _password: String) -> EmptyResult {
+        self.connector.save_auth(&name)?;
+        if let Err(err) = User::emit_new_user_state_update().await {
+            log::error!("Failed to emit new user state {err}");
+        }
+        Ok(())
+    }
+
+    pub async fn logout(&mut self) -> EmptyResult {
+        self.connector.delete_auth()?;
+        Ok(())
+    }
+
+    pub async fn get_account(&self) -> Option<String> {
+        self.connector.load_auth()
     }
 
     pub async fn install(
@@ -72,7 +97,7 @@ impl ExampleService {
         let app_id = app_id.to_owned();
         let emitter = emitter.into_owned();
         let file_name = metadata.get("file_name").unwrap().to_owned();
-        let url = self.connector.get_download_url(&file_name).unwrap();
+        // let url = self.connector.get_download_url(&file_name).unwrap();
 
         tokio::spawn(async move {
             LibraryProviderSignals::install_started(
@@ -86,62 +111,13 @@ impl ExampleService {
             )
             .await
             .unwrap();
-            let client = reqwest::Client::new();
-            let res = client
-                .get(&url)
-                .send()
-                .await
-                .or(Err(format!("Failed to GET from '{}'", &url)))
-                .unwrap();
-            let total_size = res
-                .content_length()
-                .ok_or(format!("Failed to get content length from '{}'", &url))
-                .unwrap();
 
-            let mut downloaded: u64 = 0;
             let installed_dir = PathBuf::from(&path);
             if !installed_dir.exists() {
                 std::fs::create_dir_all(&installed_dir).unwrap();
             }
             let archive_path = format!("{}/{}", path, file_name);
-            let mut dest_file = File::create(&archive_path)
-                .or(Err(format!("Failed to create file '{}'", path)))
-                .unwrap();
 
-            let mut stream = res.bytes_stream();
-            while let Some(item) = stream.next().await {
-                let chunk = match item {
-                    Ok(chunk) => chunk,
-                    Err(e) => {
-                        log::error!("{}", e);
-                        LibraryProviderSignals::install_failed(
-                            &emitter,
-                            &app_id,
-                            "Unexpected server response",
-                        )
-                        .await
-                        .unwrap();
-                        return;
-                    }
-                };
-                dest_file
-                    .write_all(&chunk)
-                    .or(Err("Error while writing to file".to_string()))
-                    .unwrap();
-                let new = min(downloaded + (chunk.len() as u64), total_size);
-                downloaded = new;
-                let progress = (downloaded as f64 / total_size as f64) * 100.0;
-                LibraryProviderSignals::install_progressed(
-                    &emitter,
-                    app_id.to_owned(),
-                    DownloadStage::Downloading,
-                    downloaded,
-                    total_size,
-                    progress,
-                )
-                .await
-                .unwrap();
-            }
             let target = PathBuf::from(&path);
             let archive_file = File::open(&archive_path)
                 .or(Err("Failed to open file "))
@@ -162,7 +138,7 @@ impl ExampleService {
     pub async fn _get_provider_item(&self, app_id: &str) -> ProviderItem {
         let metadata = self.connector.load_metadata(app_id).await.unwrap();
         ProviderItem {
-            id: metadata.get("id").unwrap().to_string(),
+            id: app_id.to_string(),
             name: metadata.get("name").unwrap().to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
@@ -196,39 +172,18 @@ impl ExampleService {
                 provider: LIBRARY_PROVIDER_ID.to_string(),
                 provider_app_id: app_id.to_owned(),
                 store_id: app_id.to_owned(),
-                product_store_link: metadata.get("website").unwrap().to_owned(),
+                product_store_link: "".to_string(),
                 parent_store_id: None,
                 last_imported_timestamp: None,
                 known_dlc_store_ids: vec![],
             }],
-            summary: metadata.get("description").unwrap().to_owned(),
-            description: metadata.get("description").unwrap().to_owned(),
+            summary: "".to_string(),
+            description: "".to_string(),
             slug: app_id.to_owned(),
-            developers: vec![metadata.get("description").unwrap().to_owned()],
+            developers: vec![],
             publishers: vec![],
             tags: vec![],
-            images: vec![
-                PlaytronImage {
-                    image_type: "OfferImageTall".to_string(),
-                    url: self
-                        .connector
-                        .get_image(app_id, "portrait")
-                        .unwrap()
-                        .to_owned(),
-                    source: LIBRARY_PROVIDER_ID.to_string(),
-                    alt: "".to_string(),
-                },
-                PlaytronImage {
-                    image_type: "header".to_string(),
-                    url: self
-                        .connector
-                        .get_image(app_id, "landscape")
-                        .unwrap()
-                        .to_owned(),
-                    source: "steam".to_string(),
-                    alt: "".to_string(),
-                },
-            ],
+            images: vec![],
         };
         serde_json::to_string(&item_meta).unwrap()
     }

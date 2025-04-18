@@ -1,5 +1,5 @@
 use crate::constants::{LIBRARY_PROVIDER_ID, LIBRARY_PROVIDER_NAME};
-use crate::local::service::ExampleService;
+use crate::local::service::LocalService;
 use crate::types::app::{DownloadStage, EulaEntry, InstalledApp, LaunchOption, ProviderItem};
 use crate::types::cloud_sync::CloudPath;
 use std::collections::HashMap;
@@ -8,11 +8,11 @@ use zbus::object_server::SignalEmitter;
 use zbus_macros::interface;
 
 pub struct LibraryProvider {
-    pub service: ExampleService,
+    pub service: LocalService,
 }
 
 impl LibraryProvider {
-    pub fn new(service: ExampleService) -> Self {
+    pub fn new(service: LocalService) -> Self {
         LibraryProvider { service }
     }
 }

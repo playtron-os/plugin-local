@@ -1,12 +1,12 @@
 use std::env;
 use std::future::pending;
+mod auth;
 mod constants;
 mod local;
 mod plugin;
 mod types;
 mod utils;
-
-use crate::local::service::ExampleService;
+use crate::local::service::LocalService;
 
 use crate::plugin::dbus::{build_connection, register_plugin};
 
@@ -20,8 +20,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     log::info!("Starting Playtron Plugin");
 
-    let example_service = ExampleService::new();
-    build_connection(example_service).await?;
+    let local_service = LocalService::new();
+    build_connection(local_service).await?;
     register_plugin().await;
 
     // Do other things or go to wait forever

@@ -1,7 +1,7 @@
 use crate::constants::{BUS_NAME, CLIENT_PATH};
-use crate::local::service::ExampleService;
-use crate::plugin;
+use crate::local::service::LocalService;
 use crate::types::results::EmptyResult;
+use crate::{auth, plugin};
 use tokio::sync::Mutex;
 use zbus::{connection, zvariant::ObjectPath, Connection};
 
@@ -11,14 +11,23 @@ lazy_static::lazy_static! {
 
 }
 
-pub async fn build_connection(service: ExampleService) -> EmptyResult {
+pub async fn build_connection(service: LocalService) -> EmptyResult {
     let plugin = plugin::plugin_interface::Plugin {};
+    let user = auth::user::User {
+        service: service.clone(),
+    };
+    let cryptography = auth::cryptography::Cryptography::new(service.clone());
+    let password_flow: auth::password_flow::PasswordFlow =
+        auth::password_flow::PasswordFlow::new(service.clone());
     let library_provider = plugin::library_provider::LibraryProvider::new(service.clone());
 
     *CONNECTION.lock().await = Some(
         connection::Builder::session()?
             .name(BUS_NAME)?
             .serve_at(CLIENT_PATH, plugin)?
+            .serve_at(CLIENT_PATH, user)?
+            .serve_at(CLIENT_PATH, cryptography)?
+            .serve_at(CLIENT_PATH, password_flow)?
             .serve_at(CLIENT_PATH, library_provider)?
             .build()
             .await?,
