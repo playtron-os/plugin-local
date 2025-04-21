@@ -1,6 +1,7 @@
 use crate::constants::LIBRARY_PROVIDER_ID;
 use crate::types::app::{
-    self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronProvider, ProviderItem,
+    self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronImage, PlaytronProvider,
+    ProviderItem,
 };
 use crate::types::cloud_sync::CloudPath;
 use crate::types::results::ResultWithError;
@@ -8,6 +9,7 @@ use futures::future;
 use rsa::pkcs1::EncodeRsaPublicKey;
 use rsa::pkcs8::LineEnding;
 use rsa::{RsaPrivateKey, RsaPublicKey};
+use std::collections::BTreeMap;
 use std::vec;
 use zbus::fdo;
 
@@ -58,6 +60,19 @@ impl LocalService {
         .await)
     }
 
+    pub fn get_images(&self, metadata: BTreeMap<String, String>) -> Vec<PlaytronImage> {
+        let mut images = Vec::new();
+        if metadata.contains_key("image") {
+            images.push(PlaytronImage {
+                image_type: "header".to_string(),
+                url: metadata.get("image").unwrap().to_owned(),
+                source: "steam".to_string(),
+                alt: "".to_string(),
+            })
+        }
+        images
+    }
+
     pub async fn get_item_metadata(&self, app_id: &str) -> String {
         let metadata = self.connector.load_metadata(app_id).await.unwrap();
         let item_meta = ItemMetadata {
@@ -80,7 +95,7 @@ impl LocalService {
             developers: vec![],
             publishers: vec![],
             tags: vec![],
-            images: vec![],
+            images: self.get_images(metadata),
         };
         serde_json::to_string(&item_meta).unwrap()
     }

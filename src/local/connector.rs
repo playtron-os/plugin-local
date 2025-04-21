@@ -2,7 +2,7 @@
 /// legendary / gog-warp / etc code should go here. The module can be renamed to represent your
 /// connector more accurately eg `legendary.rs`
 use crate::types::app::InstalledApp;
-use crate::types::results::{EmptyResult, ResultWithError};
+use crate::types::results::ResultWithError;
 use crate::utils::disks::get_mount_points;
 use dirs;
 use serde::{Deserialize, Serialize};
