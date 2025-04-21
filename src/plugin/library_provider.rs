@@ -242,23 +242,11 @@ impl LibraryProvider {
     ///   Install "ssa{sv}" "Cinebench" "/dev/sda1" 2 'os' s windows 'language' s english
     async fn install(
         &self,
-        app_id: &str,
-        dest_path: &str,
-        options: HashMap<String, zbus::zvariant::Value<'_>>,
-        #[zbus(signal_emitter)] emitter: SignalEmitter<'_>,
+        _app_id: &str,
+        _dest_path: &str,
+        _options: HashMap<String, zbus::zvariant::Value<'_>>,
     ) -> fdo::Result<i32> {
-        let result_code = match self
-            .service
-            .install(app_id, dest_path.to_string(), options, emitter.clone())
-            .await
-        {
-            Ok(installed_app) => installed_app,
-            Err(e) => {
-                log::error!("Failed to install {}: {}", app_id, e);
-                return Err(fdo::Error::Failed(e.to_string()));
-            }
-        };
-        Ok(result_code)
+        Err(fdo::Error::Failed("Install is not supported".to_string()))
     }
 
     /// Moves the given app to another disk and returns the new install directory.
@@ -295,16 +283,8 @@ impl LibraryProvider {
     ///   /one/playtron/EpicGames/LegendaryClient0 \
     ///   one.playtron.plugin.LibraryProvider \
     ///   Update "s" "460950"
-    async fn update(
-        &self,
-        app_id: String,
-        #[zbus(signal_emitter)] emitter: SignalEmitter<'_>,
-    ) -> fdo::Result<()> {
-        let _ = self
-            .service
-            .install(&app_id, "".to_string(), HashMap::new(), emitter)
-            .await;
-        Ok(())
+    async fn update(&self, _app_id: String) -> fdo::Result<()> {
+        Err(fdo::Error::Failed("Update is not supported".to_string()))
     }
 
     /// Obtain the list of CloudPaths applicable for given app_id and platform, if the list is empty it is assumed saves are not supported

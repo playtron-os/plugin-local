@@ -8,10 +8,8 @@ use futures::future;
 use rsa::pkcs1::EncodeRsaPublicKey;
 use rsa::pkcs8::LineEnding;
 use rsa::{RsaPrivateKey, RsaPublicKey};
-use std::collections::HashMap;
 use std::vec;
 use zbus::fdo;
-use zbus::object_server::SignalEmitter;
 
 use super::connector::LocalConnector;
 
@@ -32,17 +30,6 @@ impl LocalService {
     pub fn get_public_key(&self) -> String {
         let public_key = RsaPublicKey::from(&self.rsa);
         public_key.to_pkcs1_pem(LineEnding::LF).unwrap()
-    }
-
-    pub async fn install(
-        &self,
-        _app_id: &str,
-        _base_path: String,
-        _options: HashMap<String, zbus::zvariant::Value<'_>>,
-        _emitter: SignalEmitter<'_>,
-    ) -> ResultWithError<i32> {
-        log::info!("Install is not supported by this plugin");
-        Ok(0)
     }
 
     pub async fn _get_provider_item(&self, app_id: &str) -> ProviderItem {
