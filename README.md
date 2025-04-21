@@ -1,17 +1,67 @@
-# Playtron Plugin Template
+# Local games plugin for Playtron
 
-This project provides a base template that can be used for the development of plugins for Playtron using Rust.
+This plugin allows sideloading games to your Playtron device that are not 
+available on supported stores (development builds, DRM free games, shareware, ...)
 
-Plugins register a DBus service that Playserve can make calls to. They should implement the interfaces described the docs folder.
+## Installation
 
-TODO:
+If your GameOS version doesn't provide the local plugin already, you can add it manually.
 
-- Artwork Provider
-- Cloud saves
-- Game import
-- Move game
-- EULAs
-- Post install steps
-- Refresh library
-- Sync installed apps
-- cancel_move_item
+SSH into your device and create the folder for the plugin.
+
+```
+export DEVICE_IP=192.168.x.x
+ssh playtron@$DEVICE_IP
+mkdir -p ~/.local/share/playtron/plugins/local
+mkdir -p ~/.local/share/playtron/apps/local
+```
+
+Build the plugin with `cargo build` then copy the plugin to your device:
+`scp target/debug/plugin-local playtron@<DEVICE_IP>:~/.local/share/playtron/plugins/local/`
+
+Create a file named `pluginmanifest.json`, this file should contain the following content: 
+
+```
+{
+  "id": "local",
+  "startup_command": "/var/home/playtron/.local/share/playtron/plugins/local/plugin-local"
+}
+```
+
+and also copy it to the same location:
+`scp pluginmanifest.json playtron@<DEVICE_IP>:~/.local/share/playtron/plugins/local/`
+
+
+## Loading games
+
+On the machine you want to load the game from, locate your game folder 
+and create a file named `gameinfo.yaml`. Populate this file with the following information:
+
+```
+name: The game's name
+executable: game_executable.exe
+```
+
+Example:
+
+```
+name: "Street Fighter X Tekken"
+executable: "SFTK.exe"
+```
+
+In the case of a Linux game, also add `os: linux` and prefix the executable with `./`
+
+Example:
+
+```
+name: Minecraft
+executable: ./minecraft-launcher
+os: linux
+```
+
+Copy the game folder to your Playtron device:
+
+```
+rsync -avz my-game playtron@<DEVICE_IP>:~/.local/share/playtron/apps/local/
+```
+

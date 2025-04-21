@@ -58,80 +58,12 @@ impl LocalService {
 
     pub async fn install(
         &self,
-        app_id: &str,
-        base_path: String,
-        options: HashMap<String, zbus::zvariant::Value<'_>>,
-        emitter: SignalEmitter<'_>,
+        _app_id: &str,
+        _base_path: String,
+        _options: HashMap<String, zbus::zvariant::Value<'_>>,
+        _emitter: SignalEmitter<'_>,
     ) -> ResultWithError<i32> {
-        log::info!("Install {} to {}", app_id, base_path);
-        let metadata = self.connector.load_metadata(app_id).await.unwrap();
-        let path = format!("{}/{}", base_path, app_id);
-        let download_size = metadata
-            .get("download_size")
-            .unwrap()
-            .parse::<u64>()
-            .unwrap();
-
-        let platform: String = match options.get("platform") {
-            Some(platform) => platform.to_string(),
-            None => "windows".to_string(),
-        };
-
-        let installed_app = InstalledApp {
-            app_id: metadata.get("id").unwrap().to_string(),
-            installed_path: path.clone(),
-            downloaded_bytes: 0,
-            total_download_size: download_size,
-            disk_size: metadata.get("disk_size").unwrap().parse::<u64>().unwrap(),
-            version: metadata.get("version").unwrap().to_string(),
-            latest_version: metadata.get("version").unwrap().to_string(),
-            update_pending: false,
-            os: platform.clone(),
-            disabled_dlc: Vec::new(),
-        };
-        self.connector
-            .write_installed_app(app_id, &installed_app)
-            .unwrap();
-
-        log::info!("Install {} to {}", app_id, base_path);
-        let app_id = app_id.to_owned();
-        let emitter = emitter.into_owned();
-        let file_name = metadata.get("file_name").unwrap().to_owned();
-        // let url = self.connector.get_download_url(&file_name).unwrap();
-
-        tokio::spawn(async move {
-            LibraryProviderSignals::install_started(
-                &emitter,
-                installed_app.app_id.to_string(),
-                installed_app.version.to_string(),
-                installed_app.installed_path.to_string(),
-                installed_app.total_download_size,
-                false,
-                installed_app.os,
-            )
-            .await
-            .unwrap();
-
-            let installed_dir = PathBuf::from(&path);
-            if !installed_dir.exists() {
-                std::fs::create_dir_all(&installed_dir).unwrap();
-            }
-            let archive_path = format!("{}/{}", path, file_name);
-
-            let target = PathBuf::from(&path);
-            let archive_file = File::open(&archive_path)
-                .or(Err("Failed to open file "))
-                .unwrap();
-
-            zip_extract::extract(archive_file, &target, true).unwrap();
-            let source_path = PathBuf::from(archive_path);
-            std::fs::remove_file(&source_path).ok();
-
-            LibraryProviderSignals::install_completed(&emitter.clone(), app_id.to_owned())
-                .await
-                .unwrap();
-        });
-
+        log::info!("Install is not supported by this plugin");
         Ok(0)
     }
 
