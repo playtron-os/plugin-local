@@ -26,38 +26,6 @@ impl LocalConnector {
             .join(PathBuf::from("playtron/plugins/local"))
     }
 
-    pub fn load_auth(&self) -> Option<String> {
-        let auth_file = self.get_config_path().join("auth.json");
-        if fs::metadata(&auth_file).is_err() {
-            return None;
-        }
-        let auth = fs::read_to_string(&auth_file).unwrap();
-        if let Ok(account_info) = serde_json::from_str::<AccountInfo>(&auth) {
-            account_info.account.clone()
-        } else {
-            None
-        }
-    }
-
-    pub fn save_auth(&mut self, account: &str) -> EmptyResult {
-        let account_info = AccountInfo {
-            account: Some(account.to_string()),
-        };
-        match fs::write(
-            self.get_config_path().join("auth.json"),
-            serde_json::to_string_pretty(&account_info)?,
-        ) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.into()),
-        }
-    }
-
-    pub fn delete_auth(&mut self) -> EmptyResult {
-        match fs::remove_file(self.get_config_path().join("auth.json")) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.into()),
-        }
-    }
     pub fn get_library_paths(&self) -> Vec<PathBuf> {
         let mut library_paths = Vec::new();
         let home_library_path = dirs::data_dir().unwrap().join("playtron/apps/local");
