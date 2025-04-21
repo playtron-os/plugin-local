@@ -1,4 +1,3 @@
-use crate::auth::user::User;
 use crate::constants::LIBRARY_PROVIDER_ID;
 
 use crate::plugin::library_provider::LibraryProviderSignals;
@@ -6,7 +5,7 @@ use crate::types::app::{
     self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronProvider, ProviderItem,
 };
 use crate::types::cloud_sync::CloudPath;
-use crate::types::results::{EmptyResult, ResultWithError};
+use crate::types::results::ResultWithError;
 use futures::future;
 use rsa::pkcs1::EncodeRsaPublicKey;
 use rsa::pkcs8::LineEnding;
@@ -37,23 +36,6 @@ impl LocalService {
     pub fn get_public_key(&self) -> String {
         let public_key = RsaPublicKey::from(&self.rsa);
         public_key.to_pkcs1_pem(LineEnding::LF).unwrap()
-    }
-
-    pub async fn login(&mut self, name: String, _password: String) -> EmptyResult {
-        self.connector.save_auth(&name)?;
-        if let Err(err) = User::emit_new_user_state_update().await {
-            log::error!("Failed to emit new user state {err}");
-        }
-        Ok(())
-    }
-
-    pub async fn logout(&mut self) -> EmptyResult {
-        self.connector.delete_auth()?;
-        Ok(())
-    }
-
-    pub async fn get_account(&self) -> Option<String> {
-        self.connector.load_auth()
     }
 
     pub async fn install(
