@@ -105,18 +105,25 @@ impl LocalConnector {
         let mut apps: Vec<InstalledApp> = vec![];
         for library_path in self.get_library_paths() {
             for entry in fs::read_dir(library_path)? {
-                let app_id = entry?;
-                let path = &app_id.path();
+                let dir_entry = entry?;
+                let app_id = dir_entry.file_name().to_str().unwrap().to_string();
+                let metadata = self.load_metadata(&app_id).await?;
+                let os: String = match metadata.get("os") {
+                    Some(platform) => platform.to_string(),
+                    None => "windows".to_string(),
+                };
+                let path = &dir_entry.path();
+                let disk_size = 1;
                 let installed_app: InstalledApp = InstalledApp {
-                    app_id: app_id.file_name().to_str().unwrap().to_string(),
+                    app_id,
                     installed_path: path.to_str().unwrap().to_string(),
-                    downloaded_bytes: 1,
-                    total_download_size: 1,
-                    disk_size: 1,
+                    downloaded_bytes: disk_size,
+                    total_download_size: disk_size,
+                    disk_size,
                     version: "1.0".to_string(),
                     latest_version: "1.0".to_string(),
                     update_pending: false,
-                    os: "windows".to_string(),
+                    os,
                     disabled_dlc: [].to_vec(),
                 };
                 apps.push(installed_app);
