@@ -1,7 +1,5 @@
 use crate::auth::user::User;
 use crate::constants::LIBRARY_PROVIDER_ID;
-
-use crate::plugin::library_provider::LibraryProviderSignals;
 use crate::types::app::{
     self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronProvider, ProviderItem,
 };
@@ -12,8 +10,6 @@ use rsa::pkcs1::EncodeRsaPublicKey;
 use rsa::pkcs8::LineEnding;
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use std::collections::HashMap;
-use std::fs::File;
-use std::path::PathBuf;
 use std::vec;
 use zbus::fdo;
 use zbus::object_server::SignalEmitter;

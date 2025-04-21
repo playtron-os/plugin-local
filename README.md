@@ -1,7 +1,7 @@
 # Local games plugin for Playtron
 
 This plugin allows sideloading games to your Playtron device that are not 
-available on supported stores (development builds, DRM free games, shareware, ...)
+available on supported stores (development builds, DRM free games, shareware, launchers, ...)
 
 ## Installation
 
@@ -17,7 +17,7 @@ mkdir -p ~/.local/share/playtron/apps/local
 ```
 
 Build the plugin with `cargo build` then copy the plugin to your device:
-`scp target/debug/plugin-local playtron@<DEVICE_IP>:~/.local/share/playtron/plugins/local/`
+`scp target/debug/plugin-local playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
 
 Create a file named `pluginmanifest.json`, this file should contain the following content: 
 
@@ -29,7 +29,7 @@ Create a file named `pluginmanifest.json`, this file should contain the followin
 ```
 
 and also copy it to the same location:
-`scp pluginmanifest.json playtron@<DEVICE_IP>:~/.local/share/playtron/plugins/local/`
+`scp pluginmanifest.json playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
 
 
 ## Loading games
@@ -65,10 +65,10 @@ Copy the game folder to your Playtron device:
 # Run the command from the parent folder relative to your game
 cd Games
 # Make sure there is no trailing slash after `my-game` 
-rsync -avz my-game playtron@<DEVICE_IP>:~/.local/share/playtron/apps/local/
+rsync -avz my-game playtron@DEVICE_IP:~/.local/share/playtron/apps/local/
 ```
 
-Restart your device to see your newly added game on your device.
+Restart your device to see your newly added game.
 
 ## Updating games
 

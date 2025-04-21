@@ -132,21 +132,6 @@ impl LocalConnector {
         Ok(apps)
     }
 
-    pub fn write_installed_app(&self, app_id: &str, installed_app: &InstalledApp) -> EmptyResult {
-        let config_path = self.get_config_path();
-        let installed_apps_dir = config_path.join("apps");
-        if !installed_apps_dir.exists() {
-            fs::create_dir_all(&installed_apps_dir).expect("Failed to create directory");
-        }
-        let installed_app_path = installed_apps_dir.join(format!("{}.json", app_id));
-        fs::write(
-            installed_app_path,
-            serde_json::to_string_pretty(&installed_app)?,
-        )
-        .expect("Failed to write file");
-        Ok(())
-    }
-
     pub async fn get_installed_app(&self, app_id: &str) -> ResultWithError<InstalledApp> {
         let config_path = self.get_config_path();
         let installed_apps_dir = config_path.join("apps");
