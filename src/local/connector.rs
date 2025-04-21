@@ -116,6 +116,9 @@ impl LocalConnector {
             }
         };
         let metadata_path = install_path.join("gameinfo.yaml");
+        if !metadata_path.exists() {
+            return Err(format!("Metadata file for {} doesn't exist", app_id).into());
+        }
         let metadata: BTreeMap<String, String> =
             serde_yaml::from_str(&fs::read_to_string(metadata_path).unwrap()).unwrap();
         Ok(metadata)
