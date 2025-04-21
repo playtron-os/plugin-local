@@ -10,6 +10,7 @@ If your GameOS version doesn't provide the local plugin already, you can add it 
 SSH into your device and create the folder for the plugin and the installed games.
 
 ```
+// You can find the device's IP in the Wi-Fi settings of your device
 export DEVICE_IP=192.168.x.x
 ssh playtron@$DEVICE_IP
 mkdir -p ~/.local/share/playtron/plugins/local
@@ -31,6 +32,13 @@ Create a file named `pluginmanifest.json`, this file should contain the followin
 and also copy it to the same location:
 `scp pluginmanifest.json playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
 
+## Setting up rsync on Windows
+
+Rsync will allow you to copy a game folder to your device and make incremental updates.
+To get Rsync on Windows, download the Cygwin installer from their website: https://cygwin.com/
+Once in the Cygwin installer, make sure to select rsync and OpenSSH in the package selection.
+
+You can now launch a bash console which will give you access to rsync.
 
 ## Loading games
 
