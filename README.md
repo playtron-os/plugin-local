@@ -7,7 +7,7 @@ available on supported stores (development builds, DRM free games, shareware, ..
 
 If your GameOS version doesn't provide the local plugin already, you can add it manually.
 
-SSH into your device and create the folder for the plugin.
+SSH into your device and create the folder for the plugin and the installed games.
 
 ```
 export DEVICE_IP=192.168.x.x
@@ -62,6 +62,15 @@ os: linux
 Copy the game folder to your Playtron device:
 
 ```
+# Run the command from the parent folder relative to your game
+cd Games
+# Make sure there is no trailing slash after `my-game` 
 rsync -avz my-game playtron@<DEVICE_IP>:~/.local/share/playtron/apps/local/
 ```
 
+Restart your device to see your newly added game on your device.
+
+## Updating games
+
+To update a game that has already been loaded on the device, simply run the rsync command again.
+It might be necessary to add the `--delete` flag to rsync if some game files have been removed.
