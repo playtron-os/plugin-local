@@ -20,12 +20,6 @@ pub struct AccountInfo {
 }
 
 impl LocalConnector {
-    pub fn get_config_path(&self) -> PathBuf {
-        dirs::data_dir()
-            .unwrap()
-            .join(PathBuf::from("playtron/plugins/local"))
-    }
-
     pub fn get_library_paths(&self) -> Vec<PathBuf> {
         let mut library_paths = Vec::new();
         let home_library_path = dirs::data_dir().unwrap().join("playtron/apps/local");
@@ -100,14 +94,6 @@ impl LocalConnector {
         Ok(apps)
     }
 
-    pub async fn get_installed_app(&self, app_id: &str) -> ResultWithError<InstalledApp> {
-        let config_path = self.get_config_path();
-        let installed_apps_dir = config_path.join("apps");
-        let installed_app_path = installed_apps_dir.join(format!("{}.json", app_id));
-        let content = fs::read_to_string(installed_app_path)?;
-        Ok(serde_json::from_str(&content).unwrap())
-    }
-
     pub async fn load_metadata(&self, app_id: &str) -> ResultWithError<BTreeMap<String, String>> {
         let install_path = match self.find_app(app_id) {
             Some(install_path) => install_path,
@@ -125,27 +111,16 @@ impl LocalConnector {
     }
 
     pub async fn uninstall(&self, app_id: &str) -> ResultWithError<()> {
-        let installed_app = match self.get_installed_app(app_id).await {
-            Ok(app) => Some(app),
-            Err(e) => {
-                log::error!("{}", e.to_string());
-                None
+        let install_path = match self.find_app(app_id) {
+            Some(install_path) => install_path,
+            None => {
+                return Err(format!("Couldn't find install path for {}", app_id).into());
             }
         };
-        if installed_app.is_none() {
-            log::warn!(
-                "Couldn't find app_id {} in metadata dir, skipping delete",
-                app_id
-            );
-            return Ok(());
-        }
-        let installed_app = installed_app.unwrap();
-        log::info!("Removing {}", installed_app.installed_path);
-        match fs::remove_dir_all(&installed_app.installed_path) {
+        log::info!("Removing {:?}", &install_path);
+        match fs::remove_dir_all(&install_path) {
             Ok(_) => Ok(()),
-            Err(e) => {
-                Err(format!("Failed to remove {}: {}", installed_app.installed_path, e).into())
-            }
+            Err(e) => Err(format!("Failed to remove {:?}: {}", install_path, e).into()),
         }
     }
 }
