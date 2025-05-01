@@ -3,11 +3,11 @@ name = "plugin-local"
 version = "0.1.0"
 edition = "2021"
 license = "GPL-2.0"
-description = "Epic Games plugin for Playtron GameOS"
+description = "Local plugin for Playtron GameOS"
 
 [package.metadata.generate-rpm]
 assets = [
-  { source = "target/release/plugin-egs", dest = "/usr/bin/plugin-egs", mode = "755" },
+  { source = "target/release/plugin-local", dest = "/usr/bin/plugin-local", mode = "755" },
 ]
 auto-req = "no"
 
