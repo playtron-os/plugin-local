@@ -64,7 +64,7 @@ impl LocalService {
         let mut images = Vec::new();
         if metadata.contains_key("image") {
             images.push(PlaytronImage {
-                image_type: "header".to_string(),
+                image_type: "capsule".to_string(),
                 url: metadata.get("image").unwrap().to_owned(),
                 source: "steam".to_string(),
                 alt: "".to_string(),

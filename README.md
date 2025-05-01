@@ -10,7 +10,7 @@ If your GameOS version doesn't provide the local plugin already, you can add it 
 SSH into your device and create the folder for the plugin and the installed games.
 
 ```shell
-// You can find the device's IP in the Wi-Fi settings of your device
+# You can find the device's IP in the Wi-Fi settings of your device
 export DEVICE_IP=192.168.x.x
 ssh playtron@$DEVICE_IP
 mkdir -p ~/.local/share/playtron/plugins/local
