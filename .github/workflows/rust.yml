@@ -20,3 +20,15 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Install Generate RPM
+      run:  cargo install cargo-generate-rpm
+    - name: Generate RPM
+      run: cargo generate-rpm 
+    - uses: actions/upload-artifact@v4
+      with:
+        name: Plugin EGS RPM
+        path: target/generate-rpm/*.rpm
+        if-no-files-found: error
+        retention-days: 90
+        compression-level: 0
+        overwrite: true
