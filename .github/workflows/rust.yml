@@ -26,7 +26,7 @@ jobs:
       run: cargo generate-rpm 
     - uses: actions/upload-artifact@v4
       with:
-        name: Plugin EGS RPM
+        name: Playtron Local Plugin RPM
         path: target/generate-rpm/*.rpm
         if-no-files-found: error
         retention-days: 90

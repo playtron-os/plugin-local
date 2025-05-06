@@ -18,14 +18,14 @@ mkdir -p ~/.local/share/playtron/apps/local
 ```
 
 Build the plugin with `cargo build` then copy the plugin to your device:
-`scp target/debug/plugin-local playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
+`scp target/debug/playtron-plugin-local playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
 
 Create a file named `pluginmanifest.json`, this file should contain the following content: 
 
 ```json
 {
   "id": "local",
-  "startup_command": "/var/home/playtron/.local/share/playtron/plugins/local/plugin-local"
+  "startup_command": "/var/home/playtron/.local/share/playtron/plugins/local/playtron-plugin-local"
 }
 ```
 
