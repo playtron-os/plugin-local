@@ -1,0 +1,4 @@
+{
+    "id": "local",
+    "startup_command": "playtron-plugin-local"
+}
