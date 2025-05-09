@@ -1,0 +1,34 @@
+name: 🪲 Test
+
+on: [push]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  run-tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          make in-docker TARGET='test'
+
+  build-x86_64:
+    name: Run x86_64 build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          make in-docker TARGET='dist'
+
+  build-aarch64:
+    name: Run aarch64 build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          make in-docker TARGET='dist' ARCH='aarch64'
