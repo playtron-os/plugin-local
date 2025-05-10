@@ -1,5 +1,14 @@
 # Local Games Plugin for Playtron
 
+Table of Contents:
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Setting up rsync on Windows](#setting-up-rsync-on-windows)
+- [Loading Games](#loading-games)
+- [Updating Games](#updating-games)
+
+## Introduction
+
 This plugin allows sideloading games to your Playtron device that are not 
 available on supported stores (development builds, DRM free games, shareware, launchers, ...)
 
