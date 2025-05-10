@@ -2,6 +2,7 @@
 
 Table of Contents:
 - [Introduction](#introduction)
+- [Build](#build)
 - [Installation](#installation)
 - [Setting up rsync on Windows](#setting-up-rsync-on-windows)
 - [Loading Games](#loading-games)
@@ -12,9 +13,25 @@ Table of Contents:
 This plugin allows sideloading games to your [Playtron GameOS](https://github.com/playtron-os/gameos) device that are not 
 available on supported stores (development builds, DRM-free games, shareware, launchers, etc.)
 
-## Installation
+As of Playtron GameOS Beta 1, the local plugin is installed by default. Older versions of the operating system do not fully support plugins.
 
-If your GameOS version doesn't provide the local plugin already, you can add it manually.
+## Build
+
+Building is optional and recommended for plugin developers only.
+
+A basic build can be done with `cargo build`. Copy the plugin to your device:
+`scp target/debug/playtron-plugin-local playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
+
+Fully automated binary tarball and RPM builds are supported with the use of a container. Both x86_64 and aarch64 CPU architectures are supported. These commands will output packages to the `dist` directory.
+
+```shell
+make in-docker TARGET='dist'
+```
+```shell
+make in-docker TARGET='dist' ARCH="aarch64"
+```
+
+## Installation
 
 SSH into your device and create the folder for the plugin and the installed games.
 
@@ -22,15 +39,20 @@ SSH into your device and create the folder for the plugin and the installed game
 # You can find the device's IP in the Wi-Fi settings of your device
 export DEVICE_IP=192.168.x.x
 ssh playtron@$DEVICE_IP
+```
+```shell
 mkdir -p ~/.local/share/playtron/plugins/local
 mkdir -p ~/.local/share/playtron/apps/local
 ```
 
-Build the plugin with `cargo build` then copy the plugin to your device:
-`scp target/debug/playtron-plugin-local playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
+Create a file named `pluginmanifest.json`. This file should contain the following content depending on if the default installed plugin is used or a manually built plugin is used.
 
-Create a file named `pluginmanifest.json`, this file should contain the following content: 
-
+```json
+{
+  "id": "local",
+  "startup_command": "playtron-plugin-local"
+}
+```
 ```json
 {
   "id": "local",
@@ -38,7 +60,7 @@ Create a file named `pluginmanifest.json`, this file should contain the followin
 }
 ```
 
-and also copy it to the same location:
+Copy the manifest file to the same local plugin location:
 `scp pluginmanifest.json playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
 
 ## Setting up rsync on Windows
