@@ -125,7 +125,11 @@ cd Games
 rsync -avz my-game playtron@DEVICE_IP:~/.local/share/playtron/apps/local/
 ```
 
-Restart your device to see your newly added game.
+Restart the `playserve` service or reboot to see your newly added game.
+
+```shell
+systemctl --user restart playserve
+```
 
 ## Updating Games
 
