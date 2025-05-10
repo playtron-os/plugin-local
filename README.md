@@ -1,4 +1,4 @@
-# Local Games Plugin for Playtron
+# Local Games Plugin for Playtron GameOS
 
 Table of Contents:
 - [Introduction](#introduction)
@@ -9,7 +9,7 @@ Table of Contents:
 
 ## Introduction
 
-This plugin allows sideloading games to your Playtron device that are not 
+This plugin allows sideloading games to your Playtron GameOS device that are not 
 available on supported stores (development builds, DRM free games, shareware, launchers, ...)
 
 ## Installation
@@ -75,13 +75,13 @@ executable: ./minecraft-launcher
 os: linux
 ```
 
-Optionally, add an image to your game for the Playtron library. The image should be as close as possible to a 16:9 ratio and be in the highest quality possible (1080p recommended, maximum 4k)
+Optionally, add an image to your game for the Playtron GameOS library. The image should be as close as possible to a 16:9 ratio and be in the highest quality possible (1080p recommended, maximum 4k)
 
 ```yaml
 image: https://url/of/the/game/artwork.jpg
 ```
 
-Copy the game folder to your Playtron device:
+Copy the game folder to your Playtron GameOS device:
 ```shell
 # Run the command from the parent folder relative to your game
 cd Games
