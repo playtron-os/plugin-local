@@ -1,4 +1,4 @@
-# Local games plugin for Playtron
+# Local Games Plugin for Playtron
 
 This plugin allows sideloading games to your Playtron device that are not 
 available on supported stores (development builds, DRM free games, shareware, launchers, ...)
@@ -40,7 +40,7 @@ Once in the Cygwin installer, make sure to select `rsync` and `OpenSSH` in the p
 
 You can now launch a bash console which will give you access to rsync.
 
-## Loading games
+## Loading Games
 
 On the machine you want to load the game from, locate your game folder 
 and create a file named `gameinfo.yaml`. Populate this file with the following information:
@@ -82,7 +82,7 @@ rsync -avz my-game playtron@DEVICE_IP:~/.local/share/playtron/apps/local/
 
 Restart your device to see your newly added game.
 
-## Updating games
+## Updating Games
 
 To update a game that has already been loaded on the device, simply run the rsync command again.
 It might be necessary to add the `--delete` flag to rsync if some game files have been removed.
