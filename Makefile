@@ -116,7 +116,7 @@ docker-builder:
 in-docker: docker-builder
 	@# Run the given make target inside Docker
 	docker run --rm \
-		-v $(PWD):/src \
+		-v $(shell pwd):/src \
 		--workdir /src \
 		-e HOME=/home/build \
 		-e ARCH=$(ARCH) \
