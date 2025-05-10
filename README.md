@@ -92,8 +92,22 @@ In the case of a Linux game, also add `os: linux` and prefix the executable with
 
 Example:
 ```yaml
-name: Minecraft
+name: Minecraft (Official)
 executable: ./minecraft-launcher
+os: linux
+```
+
+Flatpaks are also supported by using a simple launch script. Use `chmod +x flatpak-launcher.sh` to make the script executable.
+
+Example:
+```shell
+#!/bin/bash
+
+/usr/bin/flatpak run org.prismlauncher.PrismLauncher
+```
+```yaml
+name: Minecraft (Prism Launcher)
+executable: ./flatpak-launcher.sh
 os: linux
 ```
 
