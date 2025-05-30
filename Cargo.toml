@@ -8,7 +8,7 @@ description = "Local plugin for Playtron GameOS"
 [package.metadata.generate-rpm]
 assets = [
   { source = "target/release/playtron-plugin-local", dest = "/usr/bin/playtron-plugin-local", mode = "755" },
-  { source = "pluginmanifest.json", dest = "/usr/share/playtron/plugin/local/pluginmanifest.json", mode = "755" },
+  { source = "pluginmanifest.json", dest = "/usr/share/playtron/plugins/local/pluginmanifest.json", mode = "755" },
 ]
 auto-req = "no"
 
