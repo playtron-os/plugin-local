@@ -86,6 +86,7 @@ impl LocalConnector {
                     latest_version: "1.0".to_string(),
                     update_pending: false,
                     os,
+                    language: "".to_string(),
                     disabled_dlc: [].to_vec(),
                 };
                 apps.push(installed_app);

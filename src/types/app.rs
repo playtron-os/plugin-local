@@ -26,6 +26,7 @@ pub struct InstalledApp {
     pub latest_version: String,
     pub update_pending: bool,
     pub os: String,
+    pub language: String,
     pub disabled_dlc: Vec<String>,
 }
 
