@@ -13,8 +13,6 @@ Table of Contents:
 This plugin allows sideloading games to your [Playtron GameOS](https://github.com/playtron-os/gameos) device that are not 
 available on supported stores (development builds, DRM-free games, shareware, launchers, etc.)
 
-As of Playtron GameOS Beta 1, the local plugin is installed by default. Older versions of the operating system do not fully support plugins.
-
 ## Build
 
 Building is optional and recommended for plugin developers only.
@@ -33,7 +31,7 @@ make in-docker TARGET='dist' ARCH="aarch64"
 
 ## Installation
 
-SSH into your device and create the folder for the plugin and the installed games.
+SSH into your device and create the folder for the installed games.
 
 ```shell
 # You can find the device's IP in the Wi-Fi settings of your device
@@ -41,27 +39,9 @@ export DEVICE_IP=192.168.x.x
 ssh playtron@$DEVICE_IP
 ```
 ```shell
-mkdir -p ~/.local/share/playtron/plugins/local
 mkdir -p ~/.local/share/playtron/apps/local
 ```
 
-Create a file named `pluginmanifest.json`. This file should contain the following content depending on if the default installed plugin is used or a manually built plugin is used.
-
-```json
-{
-  "id": "local",
-  "startup_command": "playtron-plugin-local"
-}
-```
-```json
-{
-  "id": "local",
-  "startup_command": "/var/home/playtron/.local/share/playtron/plugins/local/playtron-plugin-local"
-}
-```
-
-Copy the manifest file to the same local plugin location:
-`scp pluginmanifest.json playtron@$DEVICE_IP:~/.local/share/playtron/plugins/local/`
 
 ## Setting up rsync on Windows
 
