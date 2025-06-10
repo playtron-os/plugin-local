@@ -13,8 +13,6 @@ Table of Contents:
 This plugin allows sideloading games to your [Playtron GameOS](https://github.com/playtron-os/gameos) device that are not 
 available on supported stores (development builds, DRM-free games, shareware, launchers, etc.)
 
-As of Playtron GameOS Beta 1, the local plugin is installed by default. Older versions of the operating system do not fully support plugins.
-
 ## Build
 
 Building is optional and recommended for plugin developers only.
