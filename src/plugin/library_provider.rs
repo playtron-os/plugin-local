@@ -223,7 +223,7 @@ impl LibraryProvider {
     async fn get_launch_options(
         &self,
         app_id: &str,
-        _params: HashMap<String, String>,
+        _params: HashMap<String, zbus::zvariant::Value<'_>>,
     ) -> fdo::Result<Vec<LaunchOption>> {
         self.service.get_launch_options(app_id).await
     }
