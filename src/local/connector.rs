@@ -119,9 +119,13 @@ impl LocalConnector {
             }
         };
         log::info!("Removing {:?}", &install_path);
-        match fs::remove_dir_all(&install_path) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(format!("Failed to remove {:?}: {}", install_path, e).into()),
+        if install_path.exists() {
+            match fs::remove_dir_all(&install_path) {
+                Ok(_) => Ok(()),
+                Err(e) => Err(format!("Failed to remove {:?}: {}", install_path, e).into()),
+            }
+        } else {
+            Ok(())
         }
     }
 }
