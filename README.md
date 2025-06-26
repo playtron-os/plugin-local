@@ -68,6 +68,8 @@ name: "Street Fighter X Tekken"
 executable: "SFTK.exe"
 ```
 
+Windows executable (EXE) and batch (BAT) files are both supported.
+
 In the case of a Linux game, also add `os: linux` and prefix the executable with `./`
 
 Example:
@@ -76,6 +78,8 @@ name: Minecraft (Official)
 executable: ./minecraft-launcher
 os: linux
 ```
+
+Any Linux executable is supported.
 
 Flatpaks are also supported by using a simple launch script. Use `chmod +x flatpak-launcher.sh` to make the script executable.
 
