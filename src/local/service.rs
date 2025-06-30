@@ -6,10 +6,12 @@ use crate::types::app::{
 use crate::types::cloud_sync::CloudPath;
 use crate::types::results::ResultWithError;
 use futures::future;
+use inotify::{Inotify, WatchMask};
 use rsa::pkcs1::EncodeRsaPublicKey;
 use rsa::pkcs8::LineEnding;
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use std::collections::BTreeMap;
+use std::fs;
 use std::vec;
 use zbus::fdo;
 
@@ -27,6 +29,39 @@ impl LocalService {
         let mut rng = rand::thread_rng();
         let rsa = RsaPrivateKey::new(&mut rng, 2048).expect("failed to generate new key");
         Self { rsa, connector }
+    }
+
+    pub fn initialize(&self) {
+        let mut inotify = Inotify::init().expect("Failed to initialize inotify");
+
+        let library_paths = self.connector.get_library_paths();
+        library_paths.iter().for_each(|path| {
+            fs::read_dir(path).unwrap().for_each(|dir_result| {
+                let dir_entry = dir_result.unwrap();
+                let game_path = dir_entry.path();
+                let game_info = game_path.join("gameinfo.yaml");
+                inotify
+                    .watches()
+                    .add(
+                        game_info,
+                        WatchMask::MODIFY | WatchMask::CREATE | WatchMask::DELETE,
+                    )
+                    .expect("Failed to add inotify watch");
+            });
+        });
+        let mut buffer = [0u8; 4096];
+        tokio::spawn(async move {
+            loop {
+                let events = inotify
+                    .read_events_blocking(&mut buffer)
+                    .expect("Failed to read inotify events");
+
+                for event in events {
+                    // TODO emit signal to trigger update of app metadata
+                    log::info!("gameinfo modified: {:?}", event);
+                }
+            }
+        });
     }
 
     pub fn get_public_key(&self) -> String {

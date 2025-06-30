@@ -21,12 +21,12 @@ pub struct AccountInfo {
 }
 
 impl LocalConnector {
-    pub fn get_config_path(&self) -> PathBuf {
-        dirs::data_dir().unwrap().join(PathBuf::from(format!(
-            "playtron/plugins/{}",
-            LIBRARY_PROVIDER_ID
-        )))
-    }
+    // pub fn get_config_path(&self) -> PathBuf {
+    //     dirs::data_dir().unwrap().join(PathBuf::from(format!(
+    //         "playtron/plugins/{}",
+    //         LIBRARY_PROVIDER_ID
+    //     )))
+    // }
 
     pub fn get_library_paths(&self) -> Vec<PathBuf> {
         let mut library_paths = Vec::new();
