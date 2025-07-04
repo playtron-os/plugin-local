@@ -1,7 +1,6 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Deserializer;
 
-    
 pub const ISO_FORMAT: &str = "%+";
 pub const DATE_ONLY_FORMAT: &str = "%Y-%m-%dT%H:%M:%S";
 
@@ -14,8 +13,6 @@ where
     })?;
     Ok(DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc))
 }
-
-
 
 pub mod optional_date_serializer {
     use chrono::{DateTime, Utc};

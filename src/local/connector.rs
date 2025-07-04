@@ -68,6 +68,12 @@ impl LocalConnector {
         for library_path in self.get_library_paths() {
             for entry in fs::read_dir(library_path)? {
                 let dir_entry = entry?;
+                if dir_entry
+                    .metadata()
+                    .is_ok_and(|metadata| metadata.is_file())
+                {
+                    continue;
+                }
                 let app_id = dir_entry.file_name().to_str().unwrap().to_string();
                 let metadata = self.load_metadata(&app_id).await?;
                 let os: String = match metadata.get("os") {

@@ -38,7 +38,10 @@ impl LocalService {
         let metadata = self.connector.load_metadata(app_id).await.unwrap();
         ProviderItem {
             id: app_id.to_string(),
-            name: metadata.get("name").unwrap().to_string(),
+            name: metadata
+                .get("name")
+                .unwrap_or(&app_id.to_string())
+                .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
         }
@@ -62,10 +65,10 @@ impl LocalService {
 
     pub fn get_images(&self, metadata: BTreeMap<String, String>) -> Vec<PlaytronImage> {
         let mut images = Vec::new();
-        if metadata.contains_key("image") {
+        if let Some(image_url) = metadata.get("image") {
             images.push(PlaytronImage {
                 image_type: "capsule".to_string(),
-                url: metadata.get("image").unwrap().to_owned(),
+                url: image_url.to_owned(),
                 source: "steam".to_string(),
                 alt: "".to_string(),
             })
@@ -77,7 +80,10 @@ impl LocalService {
         let metadata = self.connector.load_metadata(app_id).await.unwrap();
         let item_meta = ItemMetadata {
             id: app_id.to_owned(),
-            name: metadata.get("name").unwrap().to_owned(),
+            name: metadata
+                .get("name")
+                .unwrap_or(&app_id.to_string())
+                .to_owned(),
             app_type: crate::types::app::PlaytronAppType::Game,
             providers: vec![PlaytronProvider {
                 namespace: LIBRARY_PROVIDER_ID.to_string(),
@@ -141,15 +147,19 @@ impl LocalService {
     pub async fn get_launch_options(&self, app_id: &str) -> fdo::Result<Vec<LaunchOption>> {
         log::info!("get launch options for {}", app_id);
         let metadata = self.connector.load_metadata(app_id).await.unwrap();
-        Ok(vec![LaunchOption {
-            description: "Launch".to_string(),
-            executable: metadata.get("executable").unwrap().to_owned(),
-            working_directory: "".to_string(),
-            environment: vec![],
-            arguments: "".to_string(),
-            hardware_tags: vec![],
-            launch_type: app::LaunchType::Game,
-        }])
+        if let Some(executable) = metadata.get("executable") {
+            Ok(vec![LaunchOption {
+                description: "Launch".to_string(),
+                executable: executable.to_owned(),
+                working_directory: "".to_string(),
+                environment: vec![],
+                arguments: "".to_string(),
+                hardware_tags: vec![],
+                launch_type: app::LaunchType::Game,
+            }])
+        } else {
+            Ok(vec![])
+        }
     }
 
     pub async fn move_item(&self, app_id: &str, dest_path: &str) -> fdo::Result<()> {
