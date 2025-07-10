@@ -1,4 +1,4 @@
-use crate::constants::{MINIMUM_API_VERSION, NAME, PLUGIN_ID, VERSION};
+use crate::constants::{LIBRARY_PROVIDER_ID, MINIMUM_API_VERSION, NAME, VERSION};
 use zbus::fdo;
 use zbus_macros::interface;
 
@@ -16,7 +16,7 @@ impl Plugin {
     ///   Id
     #[zbus(property)]
     async fn id(&self) -> fdo::Result<&str> {
-        Ok(PLUGIN_ID)
+        Ok(LIBRARY_PROVIDER_ID)
     }
 
     /// Human readable name of the plugin (e.g. “Steam”)

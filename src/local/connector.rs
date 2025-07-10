@@ -1,3 +1,4 @@
+use crate::constants::LIBRARY_PROVIDER_ID;
 /// This module is where you implement the functionality to interact with the store service
 /// legendary / gog-warp / etc code should go here. The module can be renamed to represent your
 /// connector more accurately eg `legendary.rs`
@@ -20,16 +21,25 @@ pub struct AccountInfo {
 }
 
 impl LocalConnector {
+    // pub fn get_config_path(&self) -> PathBuf {
+    //     dirs::data_dir().unwrap().join(PathBuf::from(format!(
+    //         "playtron/plugins/{}",
+    //         LIBRARY_PROVIDER_ID
+    //     )))
+    // }
+
     pub fn get_library_paths(&self) -> Vec<PathBuf> {
         let mut library_paths = Vec::new();
-        let home_library_path = dirs::data_dir().unwrap().join("playtron/apps/local");
+        let home_library_path = dirs::data_dir()
+            .unwrap()
+            .join(format!("playtron/apps/{}", LIBRARY_PROVIDER_ID));
         if home_library_path.exists() {
             library_paths.push(home_library_path);
         }
         for mount_point in get_mount_points() {
             let library_path = PathBuf::from_str(&mount_point)
                 .unwrap()
-                .join("playtron/apps/local");
+                .join(format!("playtron/apps/{}", LIBRARY_PROVIDER_ID));
             if library_path.exists() {
                 library_paths.push(library_path);
             }

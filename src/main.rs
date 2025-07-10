@@ -23,6 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     log::info!("Starting Playtron Plugin version: {version} ");
 
     let local_service = LocalService::new();
+    local_service.initialize();
     build_connection(local_service).await?;
     register_plugin().await;
 
