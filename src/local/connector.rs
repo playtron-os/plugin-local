@@ -20,52 +20,62 @@ pub struct AccountInfo {
 }
 
 impl LocalConnector {
-    pub fn get_library_paths(&self) -> Vec<PathBuf> {
+    pub fn get_library_paths(&self) -> ResultWithError<Vec<PathBuf>> {
         let mut library_paths = Vec::new();
-        let home_library_path = dirs::data_dir().unwrap().join("playtron/apps/local");
+        let _data_dir = dirs::data_dir().ok_or("Can't get data dir")?;
+        let home_library_path = _data_dir.join("playtron/apps/local");
         if home_library_path.exists() {
             library_paths.push(home_library_path);
         }
         for mount_point in get_mount_points() {
-            let library_path = PathBuf::from_str(&mount_point)
-                .unwrap()
-                .join("playtron/apps/local");
+            let library_path = PathBuf::from_str(&mount_point)?.join("playtron/apps/local");
             if library_path.exists() {
                 library_paths.push(library_path);
             }
         }
-        library_paths
+        Ok(library_paths)
     }
 
     pub async fn list_apps(&self) -> ResultWithError<Vec<String>> {
         let mut app_list = Vec::new();
-        for library_path in self.get_library_paths() {
+        for library_path in self.get_library_paths()? {
             for entry in fs::read_dir(library_path)? {
                 let path = entry?.path();
                 if path.is_dir() || path.is_symlink() {
-                    app_list.push(path.file_name().unwrap().to_str().unwrap().to_string())
+                    app_list.push(
+                        path.file_name()
+                            .ok_or("Failed to read file name")?
+                            .to_str()
+                            .ok_or("Failed to convert path")?
+                            .to_string(),
+                    )
                 }
             }
         }
         Ok(app_list)
     }
 
-    pub fn find_app(&self, app_id: &str) -> Option<PathBuf> {
-        for library_path in self.get_library_paths() {
-            for entry in fs::read_dir(&library_path).unwrap() {
-                let path = entry.unwrap().path();
-                let dir_name = path.file_name().unwrap().to_str().unwrap().to_string();
+    pub fn find_app(&self, app_id: &str) -> ResultWithError<Option<PathBuf>> {
+        for library_path in self.get_library_paths()? {
+            for entry in fs::read_dir(&library_path)? {
+                let path = entry?.path();
+                let dir_name = path
+                    .file_name()
+                    .ok_or("Failed to read file name")?
+                    .to_str()
+                    .ok_or("Failed to convert path")?
+                    .to_string();
                 if dir_name == app_id {
-                    return Some(library_path.join(path));
+                    return Ok(Some(library_path.join(path)));
                 }
             }
         }
-        None
+        Ok(None)
     }
 
     pub async fn list_installed_apps(&self) -> ResultWithError<Vec<InstalledApp>> {
         let mut apps: Vec<InstalledApp> = vec![];
-        for library_path in self.get_library_paths() {
+        for library_path in self.get_library_paths()? {
             for entry in fs::read_dir(library_path)? {
                 let dir_entry = entry?;
                 if dir_entry
@@ -74,7 +84,11 @@ impl LocalConnector {
                 {
                     continue;
                 }
-                let app_id = dir_entry.file_name().to_str().unwrap().to_string();
+                let app_id = dir_entry
+                    .file_name()
+                    .to_str()
+                    .ok_or("Can't get directory name")?
+                    .to_string();
                 let metadata = self.load_metadata(&app_id).await?;
                 let os: String = match metadata.get("os") {
                     Some(platform) => platform.to_string(),
@@ -84,7 +98,10 @@ impl LocalConnector {
                 let disk_size = 1;
                 let installed_app: InstalledApp = InstalledApp {
                     app_id,
-                    installed_path: path.to_str().unwrap().to_string(),
+                    installed_path: path
+                        .to_str()
+                        .ok_or("Failed to read installed path")?
+                        .to_string(),
                     downloaded_bytes: disk_size,
                     total_download_size: disk_size,
                     disk_size,
@@ -102,7 +119,7 @@ impl LocalConnector {
     }
 
     pub async fn load_metadata(&self, app_id: &str) -> ResultWithError<BTreeMap<String, String>> {
-        let install_path = match self.find_app(app_id) {
+        let install_path = match self.find_app(app_id)? {
             Some(install_path) => install_path,
             None => {
                 return Err(format!("Couldn't find install path for {}", app_id).into());
@@ -113,12 +130,12 @@ impl LocalConnector {
             return Err(format!("Metadata file for {} doesn't exist", app_id).into());
         }
         let metadata: BTreeMap<String, String> =
-            serde_yaml::from_str(&fs::read_to_string(metadata_path).unwrap()).unwrap();
+            serde_yaml::from_str(&fs::read_to_string(metadata_path)?)?;
         Ok(metadata)
     }
 
     pub async fn uninstall(&self, app_id: &str) -> ResultWithError<()> {
-        let install_path = match self.find_app(app_id) {
+        let install_path = match self.find_app(app_id)? {
             Some(install_path) => install_path,
             None => {
                 return Err(format!("Couldn't find install path for {}", app_id).into());

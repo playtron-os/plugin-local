@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments)]
 use crate::constants::{LIBRARY_PROVIDER_ID, LIBRARY_PROVIDER_NAME};
 use crate::local::service::LocalService;
 use crate::types::app::{DownloadStage, EulaEntry, InstalledApp, LaunchOption, ProviderItem};
@@ -58,6 +59,7 @@ impl LibraryProvider {
 
     /// Emitted when an install starts
     #[zbus(signal)]
+
     pub async fn install_started(
         emitter: &SignalEmitter<'_>,
         app_id: String,
@@ -185,7 +187,10 @@ impl LibraryProvider {
     ///   one.playtron.plugin.LibraryProvider \
     ///   GetProviderItem "s" "460950"
     async fn get_provider_item(&self, app_id: String) -> fdo::Result<ProviderItem> {
-        self.service.get_provider_item(&app_id).await
+        match self.service.get_provider_item(&app_id).await {
+            Ok(item) => Ok(item),
+            Err(err) => Err(fdo::Error::Failed(err.to_string())),
+        }
     }
 
     /// Returns all provider items.
@@ -196,14 +201,12 @@ impl LibraryProvider {
     ///   /one/playtron/EpicGames/LegendaryClient0 \
     ///   one.playtron.plugin.LibraryProvider \
     ///   GetProviderItems
-    async fn get_provider_items(
-        &self,
-        //#[zbus(signal_emitter)] emitter: SignalEmitter<'_>,
-    ) -> fdo::Result<Vec<ProviderItem>> {
+    async fn get_provider_items(&self) -> fdo::Result<Vec<ProviderItem>> {
         log::info!("Getting provider items");
-        let new_items = self.service.get_provider_items().await?;
-        //LibraryProviderSignals::library_updated(&emitter, &new_items).await?;
-        Ok(new_items)
+        match self.service.get_provider_items().await {
+            Ok(new_items) => Ok(new_items),
+            Err(err) => Err(fdo::Error::Failed(err.to_string())),
+        }
     }
 
     /// Return the components to be installed after the game is downloaded
@@ -225,11 +228,17 @@ impl LibraryProvider {
         app_id: &str,
         _params: HashMap<String, zbus::zvariant::Value<'_>>,
     ) -> fdo::Result<Vec<LaunchOption>> {
-        self.service.get_launch_options(app_id).await
+        match self.service.get_launch_options(app_id).await {
+            Ok(launch_options) => Ok(launch_options),
+            Err(err) => Err(fdo::Error::Failed(err.to_string())),
+        }
     }
 
     async fn get_item_metadata(&self, app_id: &str) -> fdo::Result<String> {
-        Ok(self.service.get_item_metadata(app_id).await)
+        match self.service.get_item_metadata(app_id).await {
+            Ok(metadata) => Ok(metadata),
+            Err(err) => Err(fdo::Error::Failed(err.to_string())),
+        }
     }
 
     /// Start installing the app with the given provider app id to the given

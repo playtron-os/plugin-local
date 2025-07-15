@@ -31,12 +31,18 @@ impl LocalService {
 
     pub fn get_public_key(&self) -> String {
         let public_key = RsaPublicKey::from(&self.rsa);
-        public_key.to_pkcs1_pem(LineEnding::LF).unwrap()
+        public_key
+            .to_pkcs1_pem(LineEnding::LF)
+            .map(|pem| pem.to_string())
+            .unwrap_or_else(|e| {
+                log::warn!("Failed to convert public key to PEM: {}", e);
+                String::new()
+            })
     }
 
-    pub async fn _get_provider_item(&self, app_id: &str) -> ProviderItem {
-        let metadata = self.connector.load_metadata(app_id).await.unwrap();
-        ProviderItem {
+    pub async fn _get_provider_item(&self, app_id: &str) -> ResultWithError<ProviderItem> {
+        let metadata = self.connector.load_metadata(app_id).await?;
+        Ok(ProviderItem {
             id: app_id.to_string(),
             name: metadata
                 .get("name")
@@ -44,23 +50,24 @@ impl LocalService {
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
-        }
+        })
     }
 
-    pub async fn get_provider_item(&self, app_id: &str) -> fdo::Result<ProviderItem> {
-        Ok(self._get_provider_item(app_id).await)
+    pub async fn get_provider_item(&self, app_id: &str) -> ResultWithError<ProviderItem> {
+        self._get_provider_item(app_id).await
     }
 
-    pub async fn get_provider_items(&self) -> fdo::Result<Vec<ProviderItem>> {
-        Ok(future::join_all(
+    pub async fn get_provider_items(&self) -> ResultWithError<Vec<ProviderItem>> {
+        let results = future::join_all(
             self.connector
                 .list_apps()
-                .await
-                .unwrap()
+                .await?
                 .into_iter()
                 .map(|app_id| async move { self._get_provider_item(&app_id.clone()).await }),
         )
-        .await)
+        .await;
+
+        Ok(results.into_iter().filter_map(Result::ok).collect())
     }
 
     pub fn get_images(&self, metadata: BTreeMap<String, String>) -> Vec<PlaytronImage> {
@@ -76,8 +83,8 @@ impl LocalService {
         images
     }
 
-    pub async fn get_item_metadata(&self, app_id: &str) -> String {
-        let metadata = self.connector.load_metadata(app_id).await.unwrap();
+    pub async fn get_item_metadata(&self, app_id: &str) -> ResultWithError<String> {
+        let metadata = self.connector.load_metadata(app_id).await?;
         let item_meta = ItemMetadata {
             id: app_id.to_owned(),
             name: metadata
@@ -103,7 +110,7 @@ impl LocalService {
             tags: vec![],
             images: self.get_images(metadata),
         };
-        serde_json::to_string(&item_meta).unwrap()
+        Ok(serde_json::to_string(&item_meta)?)
     }
 
     pub async fn get_installed_apps(&self) -> ResultWithError<Vec<InstalledApp>> {
@@ -144,9 +151,9 @@ impl LocalService {
         Ok(vec![])
     }
 
-    pub async fn get_launch_options(&self, app_id: &str) -> fdo::Result<Vec<LaunchOption>> {
+    pub async fn get_launch_options(&self, app_id: &str) -> ResultWithError<Vec<LaunchOption>> {
         log::info!("get launch options for {}", app_id);
-        let metadata = self.connector.load_metadata(app_id).await.unwrap();
+        let metadata = self.connector.load_metadata(app_id).await?;
         if let Some(executable) = metadata.get("executable") {
             Ok(vec![LaunchOption {
                 description: "Launch".to_string(),
