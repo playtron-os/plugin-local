@@ -31,12 +31,13 @@ pub mod optional_date_serializer {
     where
         S: Serializer,
     {
-        if date.is_none() {
-            return serializer.serialize_none();
+        match date {
+            Some(_dt) => {
+                let s = format!("{}", _dt.format(ISO_FORMAT));
+                serializer.serialize_str(&s)
+            }
+            None => serializer.serialize_none(),
         }
-
-        let s = format!("{}", date.unwrap().format(ISO_FORMAT));
-        serializer.serialize_str(&s)
     }
 
     // The signature of a deserialize_with function must follow the pattern:
@@ -50,11 +51,9 @@ pub mod optional_date_serializer {
     where
         D: Deserializer<'de>,
     {
-        let s = Option::<String>::deserialize(deserializer)?;
-        if s.is_none() {
-            return Ok(None);
+        match Option::<String>::deserialize(deserializer)? {
+            Some(d) => Ok(Some(deserialize_date::<'de, D>(d)?)),
+            None => Ok(None),
         }
-
-        Ok(Some(deserialize_date::<'de, D>(s.unwrap())?))
     }
 }

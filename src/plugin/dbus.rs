@@ -30,13 +30,20 @@ pub async fn build_connection(service: LocalService) -> EmptyResult {
 
 pub async fn register_plugin() {
     if let Some(conn) = CONNECTION.lock().await.as_ref() {
+        let object_path = match ObjectPath::try_from(CLIENT_PATH) {
+            Ok(p) => p,
+            Err(e) => {
+                log::error!("Invalid object path: {}", e);
+                return;
+            }
+        };
         if let Err(error) = conn
             .call_method(
                 Some("one.playtron.Playserve"),
                 "/one/playtron/plugins/Manager",
                 Some("one.playtron.plugin.Manager"),
                 "RegisterPlugin",
-                &(BUS_NAME, ObjectPath::try_from(CLIENT_PATH).unwrap()),
+                &(BUS_NAME, object_path),
             )
             .await
         {
