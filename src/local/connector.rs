@@ -84,38 +84,46 @@ impl LocalConnector {
                 {
                     continue;
                 }
-                let app_id = dir_entry
-                    .file_name()
-                    .to_str()
-                    .ok_or("Can't get directory name")?
-                    .to_string();
-                let metadata = self.load_metadata(&app_id).await?;
-                let os: String = match metadata.get("os") {
-                    Some(platform) => platform.to_string(),
-                    None => "windows".to_string(),
-                };
-                let path = &dir_entry.path();
-                let disk_size = 1;
-                let installed_app: InstalledApp = InstalledApp {
-                    app_id,
-                    installed_path: path
-                        .to_str()
-                        .ok_or("Failed to read installed path")?
-                        .to_string(),
-                    downloaded_bytes: disk_size,
-                    total_download_size: disk_size,
-                    disk_size,
-                    version: "1.0".to_string(),
-                    latest_version: "1.0".to_string(),
-                    update_pending: false,
-                    os,
-                    language: "".to_string(),
-                    disabled_dlc: [].to_vec(),
-                };
-                apps.push(installed_app);
+
+                match self.get_installed_app(&dir_entry).await {
+                    Ok(installed_app) => apps.push(installed_app),
+                    Err(err) => log::error!("Failed to get installed app data {err}"),
+                }
             }
         }
         Ok(apps)
+    }
+
+    async fn get_installed_app(&self, dir_entry: &fs::DirEntry) -> ResultWithError<InstalledApp> {
+        let app_id = dir_entry
+            .file_name()
+            .to_str()
+            .ok_or("Can't get directory name")?
+            .to_string();
+        let metadata = self.load_metadata(&app_id).await?;
+        let os: String = match metadata.get("os") {
+            Some(platform) => platform.to_string(),
+            None => "windows".to_string(),
+        };
+        let path = dir_entry.path();
+        let disk_size = 1;
+
+        Ok(InstalledApp {
+            app_id,
+            installed_path: path
+                .to_str()
+                .ok_or("Failed to read installed path")?
+                .to_string(),
+            downloaded_bytes: disk_size,
+            total_download_size: disk_size,
+            disk_size,
+            version: "1.0".to_string(),
+            latest_version: "1.0".to_string(),
+            update_pending: false,
+            os,
+            language: "".to_string(),
+            disabled_dlc: [].to_vec(),
+        })
     }
 
     pub async fn load_metadata(&self, app_id: &str) -> ResultWithError<BTreeMap<String, String>> {
