@@ -1,6 +1,6 @@
 [package]
 name = "playtron-plugin-local"
-version = "1.2.4"
+version = "1.2.5"
 edition = "2021"
 license = "GPL-2.0"
 description = "Local plugin for Playtron GameOS"
