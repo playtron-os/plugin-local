@@ -266,6 +266,8 @@ pub struct ItemMetadata {
     pub developers: Vec<String>,
     #[serde(alias = "type")]
     pub app_type: PlaytronAppType,
+    #[serde(default = "super::default_true")]
+    pub use_container_runtime: bool,
 }
 
 #[derive(Deserialize, Serialize, Debug, Default, Clone)]

@@ -46,6 +46,7 @@ impl LocalService {
             id: app_id.to_string(),
             name: metadata
                 .get("name")
+                .and_then(|n| n.as_str())
                 .unwrap_or(&app_id.to_string())
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
@@ -70,9 +71,9 @@ impl LocalService {
         Ok(results.into_iter().filter_map(Result::ok).collect())
     }
 
-    pub fn get_images(&self, metadata: BTreeMap<String, String>) -> Vec<PlaytronImage> {
+    pub fn get_images(&self, metadata: BTreeMap<String, serde_yaml::Value>) -> Vec<PlaytronImage> {
         let mut images = Vec::new();
-        if let Some(image_url) = metadata.get("image") {
+        if let Some(image_url) = metadata.get("image").and_then(|img| img.as_str()) {
             images.push(PlaytronImage {
                 image_type: "capsule".to_string(),
                 url: image_url.to_owned(),
@@ -89,6 +90,7 @@ impl LocalService {
             id: app_id.to_owned(),
             name: metadata
                 .get("name")
+                .and_then(|n| n.as_str())
                 .unwrap_or(&app_id.to_string())
                 .to_owned(),
             app_type: crate::types::app::PlaytronAppType::Game,
@@ -108,6 +110,10 @@ impl LocalService {
             developers: vec![],
             publishers: vec![],
             tags: vec![],
+            use_container_runtime: metadata
+                .get("runtime")
+                .and_then(|r| r.as_bool())
+                .is_none_or(|r| r),
             images: self.get_images(metadata),
         };
         Ok(serde_json::to_string(&item_meta)?)
@@ -154,7 +160,7 @@ impl LocalService {
     pub async fn get_launch_options(&self, app_id: &str) -> ResultWithError<Vec<LaunchOption>> {
         log::info!("get launch options for {}", app_id);
         let metadata = self.connector.load_metadata(app_id).await?;
-        if let Some(executable) = metadata.get("executable") {
+        if let Some(executable) = metadata.get("executable").and_then(|exe| exe.as_str()) {
             Ok(vec![LaunchOption {
                 description: "Launch".to_string(),
                 executable: executable.to_owned(),
