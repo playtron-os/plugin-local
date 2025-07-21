@@ -101,7 +101,7 @@ impl LocalConnector {
             .ok_or("Can't get directory name")?
             .to_string();
         let metadata = self.load_metadata(&app_id).await?;
-        let os: String = match metadata.get("os") {
+        let os: String = match metadata.get("os").and_then(|os| os.as_str()) {
             Some(platform) => platform.to_string(),
             None => "windows".to_string(),
         };
@@ -126,7 +126,10 @@ impl LocalConnector {
         })
     }
 
-    pub async fn load_metadata(&self, app_id: &str) -> ResultWithError<BTreeMap<String, String>> {
+    pub async fn load_metadata(
+        &self,
+        app_id: &str,
+    ) -> ResultWithError<BTreeMap<String, serde_yaml::Value>> {
         let install_path = match self.find_app(app_id)? {
             Some(install_path) => install_path,
             None => {
@@ -137,7 +140,7 @@ impl LocalConnector {
         if !metadata_path.exists() {
             return Err(format!("Metadata file for {} doesn't exist", app_id).into());
         }
-        let metadata: BTreeMap<String, String> =
+        let metadata: BTreeMap<String, serde_yaml::Value> =
             serde_yaml::from_str(&fs::read_to_string(metadata_path)?)?;
         Ok(metadata)
     }
