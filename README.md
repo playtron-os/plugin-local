@@ -93,8 +93,9 @@ Example:
 name: Minecraft (Prism Launcher)
 executable: ./flatpak-launcher.sh
 os: linux
-runtime: false # default is true - apps run inside of container runtime
 ```
+
+If your game is Linux native and was built specifically against the Steam Runtime 3 (sniper), you should add `runtime: true` to gameinfo.yaml.
 
 Optionally, add an image to your game for the Playtron GameOS library. The image should be as close as possible to a 16:9 ratio and be in the highest quality possible (1080p recommended, maximum 4k)
 
