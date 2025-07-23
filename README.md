@@ -79,7 +79,14 @@ executable: ./minecraft-launcher
 os: linux
 ```
 
-Any Linux executable is supported.
+By default Linux executables are launched in the Sniper container. To ensure the best compatibility,
+prefer games built against the Sniper SDK. Read more here: https://gitlab.steamos.cloud/steamrt/sniper/sdk
+
+If the runtime container causes issues, you can launch the executable without it, in the context of the OS.
+To do so, add to your gameinfo.yaml file:
+```yaml
+runtime: false
+```
 
 Flatpaks are also supported by using a simple launch script. Use `chmod +x flatpak-launcher.sh` to make the script executable.
 
@@ -93,10 +100,10 @@ Example:
 name: Minecraft (Prism Launcher)
 executable: ./flatpak-launcher.sh
 os: linux
-runtime: false # default is true - apps run inside of container runtime
+runtime: false # Flatpak and other system binaries should run without the runtime
 ```
 
-Optionally, add an image to your game for the Playtron GameOS library. The image should be as close as possible to a 16:9 ratio and be in the highest quality possible (1080p recommended, maximum 4k)
+Optionally, add an image to your game for the Playtron GameOS library. The image should be as close as possible to a 16:9 ratio and be in the highest quality possible (1080p or 1440p recommended)
 
 ```yaml
 image: https://url/of/the/game/artwork.jpg
