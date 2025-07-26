@@ -47,7 +47,7 @@ impl LocalService {
             name: metadata
                 .get("name")
                 .and_then(|n| n.as_str())
-                .unwrap_or(&app_id.to_string())
+                .unwrap_or(app_id)
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
@@ -75,9 +75,9 @@ impl LocalService {
         let mut images = Vec::new();
         if let Some(image_url) = metadata.get("image").and_then(|img| img.as_str()) {
             images.push(PlaytronImage {
-                image_type: "capsule".to_string(),
+                image_type: "landscape".to_string(),
                 url: image_url.to_owned(),
-                source: "steam".to_string(),
+                source: "local".to_string(),
                 alt: "".to_string(),
             })
         }
@@ -91,7 +91,7 @@ impl LocalService {
             name: metadata
                 .get("name")
                 .and_then(|n| n.as_str())
-                .unwrap_or(&app_id.to_string())
+                .unwrap_or(app_id)
                 .to_owned(),
             app_type: crate::types::app::PlaytronAppType::Game,
             providers: vec![PlaytronProvider {
