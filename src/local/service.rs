@@ -47,7 +47,7 @@ impl LocalService {
             name: metadata
                 .get("name")
                 .and_then(|n| n.as_str())
-                .unwrap_or(&app_id.to_string())
+                .unwrap_or(app_id)
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
@@ -91,7 +91,7 @@ impl LocalService {
             name: metadata
                 .get("name")
                 .and_then(|n| n.as_str())
-                .unwrap_or(&app_id.to_string())
+                .unwrap_or(app_id)
                 .to_owned(),
             app_type: crate::types::app::PlaytronAppType::Game,
             providers: vec![PlaytronProvider {

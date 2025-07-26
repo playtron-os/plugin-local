@@ -256,11 +256,15 @@ impl LibraryProvider {
     ///   Install "ssa{sv}" "Cinebench" "/dev/sda1" 2 'os' s windows 'language' s english
     async fn install(
         &self,
-        _app_id: &str,
+        app_id: &str,
         _dest_path: &str,
         _options: HashMap<String, zbus::zvariant::Value<'_>>,
+        #[zbus(signal_emitter)] emitter: SignalEmitter<'_>,
     ) -> fdo::Result<i32> {
-        Err(fdo::Error::Failed("Install is not supported".to_string()))
+        // Fake the install since it's manual.
+        // Only needed for launch configs
+        emitter.install_completed(app_id.to_string()).await?;
+        Ok(0)
     }
 
     /// Moves the given app to another disk and returns the new install directory.
