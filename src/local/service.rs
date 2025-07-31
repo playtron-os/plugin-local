@@ -75,9 +75,9 @@ impl LocalService {
         let mut images = Vec::new();
         if let Some(image_url) = metadata.get("image").and_then(|img| img.as_str()) {
             images.push(PlaytronImage {
-                image_type: "capsule".to_string(),
+                image_type: "landscape".to_string(),
                 url: image_url.to_owned(),
-                source: "steam".to_string(),
+                source: "local".to_string(),
                 alt: "".to_string(),
             })
         }
