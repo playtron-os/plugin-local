@@ -106,7 +106,7 @@ impl LocalConnector {
             None => "windows".to_string(),
         };
         let path = dir_entry.path();
-        let disk_size = 1;
+        let disk_size = fs_extra::dir::get_size(path.clone())?;
 
         Ok(InstalledApp {
             app_id,
