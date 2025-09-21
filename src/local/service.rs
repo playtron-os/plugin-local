@@ -1,7 +1,7 @@
 use crate::constants::LIBRARY_PROVIDER_ID;
 use crate::types::app::{
     self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronImage, PlaytronProvider,
-    ProviderItem,
+    ProviderItem, ReleaseState,
 };
 use crate::types::cloud_sync::CloudPath;
 use crate::types::results::ResultWithError;
@@ -51,6 +51,8 @@ impl LocalService {
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
+            release_date: 0,
+            release_state: ReleaseState::Released,
         })
     }
 
