@@ -15,6 +15,8 @@ use zbus::fdo;
 
 use super::connector::LocalConnector;
 
+pub const DEFAULT_RELEASE_DATE: u64 = 0;
+
 #[derive(Clone)]
 pub struct LocalService {
     rsa: RsaPrivateKey,
@@ -51,7 +53,7 @@ impl LocalService {
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
-            release_date: 0,
+            release_date: DEFAULT_RELEASE_DATE,
             release_state: ReleaseState::Released,
         })
     }
