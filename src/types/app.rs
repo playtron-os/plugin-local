@@ -108,7 +108,9 @@ pub struct ProviderItem {
     pub name: String,
     pub provider: String,
     pub app_type: AppType,
+    /// The release state of the item. Indicates whether the item is released, preload only, or unreleased.
     pub release_state: ReleaseState,
+    /// The release date of the item, represented as a Unix timestamp in milliseconds since epoch.
     pub release_date: u64,
 }
 
