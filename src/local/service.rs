@@ -1,7 +1,7 @@
 use crate::constants::LIBRARY_PROVIDER_ID;
 use crate::types::app::{
     self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronImage, PlaytronProvider,
-    ProviderItem,
+    ProviderItem, ReleaseState,
 };
 use crate::types::cloud_sync::CloudPath;
 use crate::types::results::ResultWithError;
@@ -14,6 +14,8 @@ use std::vec;
 use zbus::fdo;
 
 use super::connector::LocalConnector;
+
+pub const DEFAULT_RELEASE_DATE: u64 = 0;
 
 #[derive(Clone)]
 pub struct LocalService {
@@ -51,6 +53,8 @@ impl LocalService {
                 .to_string(),
             provider: LIBRARY_PROVIDER_ID.to_string(),
             app_type: crate::types::app::AppType::Game,
+            release_date: DEFAULT_RELEASE_DATE,
+            release_state: ReleaseState::Released,
         })
     }
 
