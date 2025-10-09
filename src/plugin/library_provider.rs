@@ -275,8 +275,28 @@ impl LibraryProvider {
     ///   /one/playtron/EpicGames/LegendaryClient0 \
     ///   one.playtron.plugin.LibraryProvider \
     ///   MoveItem "ss" "460950" "/dev/sda3"
-    async fn move_item(&self, app_id: &str, dest_path: &str) -> fdo::Result<()> {
-        self.service.move_item(app_id, dest_path).await
+    async fn move_item(
+        &self,
+        app_id: String,
+        dest_path: String,
+        #[zbus(signal_emitter)] emitter: SignalEmitter<'_>,
+    ) -> fdo::Result<()> {
+        match self
+            .service
+            .move_item(app_id.clone(), dest_path.clone(), emitter.clone())
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(fdo::Error::Failed(e.to_string())),
+        }
+    }
+
+    async fn cancel_move_item(&self, app_id: &str) -> fdo::Result<()> {
+        log::info!("cancel move item for {}", app_id);
+        match self.service.cancel_move_item().await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(fdo::Error::Failed(e.to_string())),
+        }
     }
 
     /// Uninstalls the given app.

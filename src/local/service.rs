@@ -1,21 +1,32 @@
 use crate::constants::LIBRARY_PROVIDER_ID;
+use crate::plugin::library_provider::LibraryProviderSignals;
 use crate::types::app::{
     self, EulaEntry, InstalledApp, ItemMetadata, LaunchOption, PlaytronImage, PlaytronProvider,
     ProviderItem, ReleaseState,
 };
 use crate::types::cloud_sync::CloudPath;
 use crate::types::results::ResultWithError;
+use crate::utils::system::{get_folder_name, move_folder_with_progress};
 use futures::future;
+use futures_util::StreamExt;
+use parking_lot::Mutex;
 use rsa::pkcs1::EncodeRsaPublicKey;
 use rsa::pkcs8::LineEnding;
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use std::collections::BTreeMap;
+use std::path::Path;
 use std::vec;
+use tokio_util::sync::CancellationToken;
 use zbus::fdo;
+use zbus::object_server::SignalEmitter;
 
 use super::connector::LocalConnector;
 
 pub const DEFAULT_RELEASE_DATE: u64 = 0;
+
+lazy_static::lazy_static! {
+    static ref MOVE_CANCELLATION_TOKEN: Mutex<Option<CancellationToken>> = Mutex::default();
+}
 
 #[derive(Clone)]
 pub struct LocalService {
@@ -178,10 +189,85 @@ impl LocalService {
             Ok(vec![])
         }
     }
-
-    pub async fn move_item(&self, app_id: &str, dest_path: &str) -> fdo::Result<()> {
-        log::info!("Move {} to {}", app_id, dest_path);
+    pub async fn cancel_move_item(&self) -> fdo::Result<()> {
+        if let Some(token) = MOVE_CANCELLATION_TOKEN.lock().take() {
+            token.cancel();
+        }
         Ok(())
+    }
+
+    pub async fn move_item(
+        &self,
+        app_id: String,
+        base_path: String,
+        emitter: SignalEmitter<'_>,
+    ) -> ResultWithError<String> {
+        log::info!("Move {} to {}", app_id, base_path);
+        if MOVE_CANCELLATION_TOKEN.lock().is_some() {
+            return Err("An app move operation is already in progress".into());
+        }
+        let from_path = self.connector.find_app(&app_id)?.ok_or("App not found")?;
+        let folder_name = get_folder_name(from_path.clone())
+            .ok_or("Failed to get folder name from source path")?;
+        let path_buf = Path::new(&base_path).join(folder_name);
+        let dest_path = path_buf.to_str().ok_or("Invalid destination path")?;
+        log::info!("Moving from {:?} to {:?}", from_path, dest_path);
+        let from = from_path
+            .as_os_str()
+            .to_str()
+            .ok_or("Invalid source path")?;
+        let dest_clone = dest_path.to_string();
+        let from_clone = from.to_string();
+
+        let cancel_token = CancellationToken::new();
+        *MOVE_CANCELLATION_TOKEN.lock() = Some(cancel_token.clone());
+
+        let emitter = emitter.into_owned();
+        tokio::spawn(async move {
+            let mut progress =
+                move_folder_with_progress(&from_clone, &dest_clone, cancel_token).await;
+            while let Some(progress_result) = progress.next().await {
+                match progress_result {
+                    Ok(progress_result) => match progress_result {
+                        Ok(progress) => {
+                            LibraryProviderSignals::move_item_progressed(
+                                &emitter.clone(),
+                                app_id.clone(),
+                                progress.into(),
+                            )
+                            .await?;
+                        }
+                        Err(e) => {
+                            LibraryProviderSignals::move_item_failed(
+                                &emitter.clone(),
+                                app_id.clone(),
+                                e.to_string(),
+                            )
+                            .await?;
+                            return Err(e);
+                        }
+                    },
+                    Err(e) => {
+                        LibraryProviderSignals::move_item_failed(
+                            &emitter.clone(),
+                            app_id.clone(),
+                            e.to_string(),
+                        )
+                        .await?;
+                        return Err(e);
+                    }
+                }
+            }
+
+            LibraryProviderSignals::move_item_completed(
+                &emitter.clone(),
+                app_id.clone(),
+                dest_clone,
+            )
+            .await?;
+            Ok(())
+        });
+        Ok(dest_path.to_string())
     }
 
     pub async fn uninstall(&self, app_id: &str) -> fdo::Result<()> {
