@@ -26,6 +26,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     build_connection(local_service).await?;
     register_plugin().await;
 
+    // Watch local game directories for new/removed apps
+    tokio::spawn(local::watcher::start_watcher());
+
     // Do other things or go to wait forever
     pending::<()>().await;
 

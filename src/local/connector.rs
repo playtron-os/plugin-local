@@ -1,6 +1,7 @@
 /// This module is where you implement the functionality to interact with the store service
 /// legendary / gog-warp / etc code should go here. The module can be renamed to represent your
 /// connector more accurately eg `legendary.rs`
+use crate::constants::LIBRARY_SUBDIR;
 use crate::types::app::InstalledApp;
 use crate::types::results::ResultWithError;
 use crate::utils::disks::get_mount_points;
@@ -23,12 +24,12 @@ impl LocalConnector {
     pub fn get_library_paths(&self) -> ResultWithError<Vec<PathBuf>> {
         let mut library_paths = Vec::new();
         let _data_dir = dirs::data_dir().ok_or("Can't get data dir")?;
-        let home_library_path = _data_dir.join("playtron/apps/local");
+        let home_library_path = _data_dir.join(LIBRARY_SUBDIR);
         if home_library_path.exists() {
             library_paths.push(home_library_path);
         }
         for mount_point in get_mount_points() {
-            let library_path = PathBuf::from_str(&mount_point)?.join("playtron/apps/local");
+            let library_path = PathBuf::from_str(&mount_point)?.join(LIBRARY_SUBDIR);
             if library_path.exists() {
                 library_paths.push(library_path);
             }
