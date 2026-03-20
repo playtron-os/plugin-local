@@ -6,3 +6,4 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const MINIMUM_API_VERSION: &str = "0.1.1";
 pub const LIBRARY_PROVIDER_NAME: &str = "Local games";
 pub const LIBRARY_PROVIDER_ID: &str = "local";
+pub const LIBRARY_SUBDIR: &str = "playtron/apps/local";
