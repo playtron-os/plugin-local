@@ -106,6 +106,13 @@ pub async fn start_watcher() {
                 sleep(Duration::from_secs(2)).await;
                 while rx.try_recv().is_ok() {}
 
+                // Re-sync watches so new subdirectories get watched too
+                sync_watch_paths(
+                    &connector,
+                    &home_library_path,
+                    &mut watcher,
+                    &mut watched_paths,
+                );
                 check_for_changes(&connector, &mut known_apps).await;
             }
             WatchEvent::DriveChanged => {
@@ -206,6 +213,21 @@ fn sync_watch_paths(
         current_paths.extend(paths);
     }
 
+    // Also watch immediate subdirectories (game folders) so we detect
+    // gameinfo.yaml being added/modified/removed inside them.
+    let library_roots: Vec<PathBuf> = current_paths.iter().cloned().collect();
+    for root in &library_roots {
+        if let Ok(entries) = std::fs::read_dir(root) {
+            for entry in entries.flatten() {
+                let is_dir = entry.metadata().map(|m| m.is_dir()).unwrap_or(false);
+                let is_symlink = entry.file_type().map(|t| t.is_symlink()).unwrap_or(false);
+                if is_dir || is_symlink {
+                    current_paths.insert(entry.path());
+                }
+            }
+        }
+    }
+
     let to_add: Vec<_> = current_paths.difference(watched_paths).cloned().collect();
     let to_remove: Vec<_> = watched_paths.difference(&current_paths).cloned().collect();
 
@@ -214,14 +236,14 @@ fn sync_watch_paths(
     }
 
     for path in &to_remove {
-        log::info!("Unwatching removed library path: {:?}", path);
+        log::info!("Unwatching removed path: {:?}", path);
         if let Err(e) = watcher.unwatch(path) {
             log::warn!("Failed to unwatch {:?}: {}", path, e);
         }
     }
 
     for path in &to_add {
-        log::info!("Watching new library path: {:?}", path);
+        log::info!("Watching path: {:?}", path);
         if let Err(e) = watcher.watch(path, RecursiveMode::NonRecursive) {
             log::warn!("Failed to watch {:?}: {}", path, e);
         }
